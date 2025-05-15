@@ -3,25 +3,31 @@
   "$id": "https://example.com/entry-schema",
   "type": "array",
   "users": {
-  "properties": {
-    "id": {
-      "description": "The unique identifier for a product",
-      "type": "integer"
-    },
-    "name": {
-      "description": "Name of the user",
-      "type": "string"
-    },
-    "email": {
-      "type": "string"
-    },
-    "gender": {
-      "type": "string"
-    },
-    "status": {
-      "type": "string"
+    "properties": {
+      "id": {
+        "description": "The unique identifier for a product",
+        "type": "integer"
+      },
+      "name": {
+        "description": "Name of the user",
+        "type": "string"
+      },
+      "email": {
+        "type": "string"
+      },
+      "gender": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      }
     }
-  }
-},
-  "required": ["id", "name", "email","gender", "status"]
+  },
+  "required": [
+    "id",
+    "name",
+    "email",
+    "gender",
+    "status"
+  ]
 }
