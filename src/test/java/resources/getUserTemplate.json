@@ -1,5 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://example.com/entry-schema",
     "type": "object",
     "properties": {
         "id": {

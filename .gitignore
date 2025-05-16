@@ -2,6 +2,7 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+src/main/java/org/example/resources/data.properties
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
@@ -10,8 +11,8 @@ target/
 .idea/libraries/
 *.iws
 *.iml
-*.ipr
 .idea
+*.ipr
 
 ### Eclipse ###
 .apt_generated
