@@ -10,6 +10,8 @@ public abstract class BaseTest {
 
     HttpService httpService;
 
+    GraphQLService graphQLService;
+
     JsonValidator jsonValidator;
 
     TestDataFactory testDataFactory;
@@ -24,6 +26,7 @@ public abstract class BaseTest {
         httpService = new HttpService(token);
         jsonValidator = new JsonValidator(loadProperties);
         testDataFactory = new TestDataFactory();
+        graphQLService = new GraphQLService(token);
     }
 
 

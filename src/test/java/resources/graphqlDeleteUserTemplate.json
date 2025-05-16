@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/entry-schema",
+  "type": "object",
+  "properties": {
+    "data": {
+      "deleteUser": {
+        "user": {
+          "id": {
+            "description": "The unique identifier for a product",
+            "type": "integer"
+          },
+          "name": {
+            "description": "Name of the user",
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "gender": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

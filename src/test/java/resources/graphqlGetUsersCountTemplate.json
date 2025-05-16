@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/entry-schema",
+  "type": "object",
+  "properties": {
+    "data": {
+      "users": {
+        "totalCount": {
+          "description": "The unique identifier for a product",
+          "type": "integer"
+        }
+      }
+    }
+  }
+}
