@@ -2,21 +2,14 @@ package org.example;
 
 
 import com.networknt.schema.ValidationMessage;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.hc.client5.http.classic.methods.*;
-import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
-import org.apache.hc.client5.http.impl.classic.*;
 import org.apache.hc.core5.http.*;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.apache.hc.core5.http.message.BasicHeader;
-import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.example.models.User;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -40,7 +33,7 @@ public class UserTest extends BaseTest {
 
     @Test
     public void testGetUsers() throws IOException, ParseException {
-        CloseableHttpResponse response = httpService.sendGetRequest(NO_SPECIFIC_ID);
+        ClassicHttpResponse response = httpService.sendGetRequest(NO_SPECIFIC_ID);
         int responseCode = response.getCode();
         String responseBody = EntityUtils.toString(response.getEntity());
         Assert.assertEquals(responseCode, HTTP_OK, "Wrong response code. Expected: " + HTTP_OK + " Received: " + responseCode);
@@ -50,7 +43,7 @@ public class UserTest extends BaseTest {
 
     @Test
     public void testGetUser() throws IOException, ParseException {
-        CloseableHttpResponse response = httpService.sendGetRequest(testDataFactory.getId());
+        ClassicHttpResponse response = httpService.sendGetRequest(testDataFactory.getId());
         int responseCode = response.getCode();
         String responseBody = EntityUtils.toString(response.getEntity());
         Assert.assertEquals(responseCode, HTTP_OK, "Wrong response code. Expected: " + HTTP_OK + " Received: " + responseCode);
@@ -60,14 +53,14 @@ public class UserTest extends BaseTest {
 
     @Test
     public void testGetNonExistentUser() throws IOException {
-        CloseableHttpResponse response = httpService.sendGetRequest(NON_EXISTENT_ID);
+        ClassicHttpResponse response = httpService.sendGetRequest(NON_EXISTENT_ID);
         int responseCode = response.getCode();
         Assert.assertEquals(responseCode, HTTP_NOTFOUND, "Wrong response code. Expected: " + HTTP_NOTFOUND + " Received: " + responseCode);
     }
 
     @Test
     void testCreateUser() throws IOException, ParseException {
-        CloseableHttpResponse response = httpService.sendPostRequest(testDataFactory.generateTestUser());
+        ClassicHttpResponse response = httpService.sendPostRequest(testDataFactory.generateTestUser());
         int responseCode = response.getCode();
         String responseBody = EntityUtils.toString(response.getEntity());
         Assert.assertEquals(responseCode, HTTP_CREATED, "Wrong response code. Expected: " + HTTP_CREATED + " Received: " + responseCode);
@@ -77,7 +70,7 @@ public class UserTest extends BaseTest {
 
     @Test
     void testCreateUserWithIncorrectParams() throws IOException {
-        CloseableHttpResponse response = httpService.sendPostRequestWithIncorrectParams();
+        ClassicHttpResponse response = httpService.sendPostRequestWithIncorrectParams();
         int responseCode = response.getCode();
         Assert.assertEquals(responseCode, HTTP_UNPROCESSABLECONTENT, "Wrong response code. Expected: " + HTTP_UNPROCESSABLECONTENT + " Received: " + responseCode);
     }
@@ -86,14 +79,14 @@ public class UserTest extends BaseTest {
     void testCreateUserWithIncorrectMailFormat() throws IOException, ParseException {
         User user = testDataFactory.generateTestUser();
         user.setEmail("johnmail.com");
-        CloseableHttpResponse response = httpService.sendPostRequest(user);
+        ClassicHttpResponse response = httpService.sendPostRequest(user);
         int responseCode = response.getCode();
         Assert.assertEquals(responseCode, HTTP_UNPROCESSABLECONTENT, "Wrong response code. Expected: " + HTTP_UNPROCESSABLECONTENT + " Received: " + responseCode);
     }
 
     @Test
     public void testPatchUser() throws IOException, ParseException {
-        CloseableHttpResponse response = httpService.sendPatchRequest(testDataFactory.generateTestUser());
+        ClassicHttpResponse response = httpService.sendPatchRequest(testDataFactory.generateTestUser());
         int responseCode = response.getCode();
         String responseBody = EntityUtils.toString(response.getEntity());
         Assert.assertEquals(responseCode, HTTP_OK, "Wrong response code. Expected: " + HTTP_OK + " Received: " + responseCode);
@@ -103,7 +96,7 @@ public class UserTest extends BaseTest {
 
     @Test
     public void testPutUser() throws IOException, ParseException {
-        CloseableHttpResponse response = httpService.sendPutRequest(testDataFactory.generateTestUser());
+        ClassicHttpResponse response = httpService.sendPutRequest(testDataFactory.generateTestUser());
         int responseCode = response.getCode();
         String responseBody = EntityUtils.toString(response.getEntity());
         Assert.assertEquals(responseCode, HTTP_OK, "Wrong response code. Expected: " + HTTP_OK + " Received: " + responseCode);
@@ -113,14 +106,14 @@ public class UserTest extends BaseTest {
 
     @Test
     public void testDeleteUser() throws IOException, ParseException {
-        CloseableHttpResponse response = httpService.sendDeleteRequest(testDataFactory.getId());
+        ClassicHttpResponse response = httpService.sendDeleteRequest(testDataFactory.getId());
         int responseCode = response.getCode();
         Assert.assertEquals(responseCode, HTTP_NOCONTENTSUCCESS, "Wrong response code. Expected: " + HTTP_NOCONTENTSUCCESS + " Received: " + responseCode);
     }
 
     @Test
     public void testDeleteUserWithoutAccessToken() throws IOException, ParseException {
-        CloseableHttpResponse response = httpService.sendDeleteRequestWithoutToken(testDataFactory.getId());
+        ClassicHttpResponse response = httpService.sendDeleteRequestWithoutToken(testDataFactory.getId());
         int responseCode = response.getCode();
         Assert.assertEquals(responseCode, HTTP_UNAUTHORIZED, "Wrong response code. Expected: " + HTTP_UNAUTHORIZED + " Received: " + responseCode);
     }

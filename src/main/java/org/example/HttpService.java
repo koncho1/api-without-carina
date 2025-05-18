@@ -2,6 +2,7 @@ package org.example;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.classic.methods.*;
 import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -23,7 +24,7 @@ public class HttpService {
 
     private String token;
 
-    private CloseableHttpClient client;
+    private HttpClient client;
 
     public HttpService() {
         client = HttpClients.createDefault();
@@ -34,7 +35,7 @@ public class HttpService {
         client = HttpClients.createDefault();
     }
 
-    public CloseableHttpResponse sendGetRequest(int id) throws IOException {
+    public ClassicHttpResponse sendGetRequest(int id) throws IOException {
         String url = API_URL;
         if (id != 0) {
             url += "/" + id;
@@ -42,11 +43,11 @@ public class HttpService {
         HttpUriRequest request = new HttpGet(url);
         Header accept = new BasicHeader(HttpHeaders.ACCEPT, "application/json");
         request.setHeader(accept);
-        CloseableHttpResponse response = client.execute(request);
+        ClassicHttpResponse response = (ClassicHttpResponse) client.execute(request);
         return response;
     }
 
-    public CloseableHttpResponse sendPostRequest(User user) throws IOException {
+    public ClassicHttpResponse sendPostRequest(User user) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         HttpPost httpPost = new HttpPost(API_URL);
         String json = mapper.writeValueAsString(user);
@@ -56,11 +57,11 @@ public class HttpService {
         Header accept = new BasicHeader(HttpHeaders.ACCEPT, "application/json");
         Header contentType = new BasicHeader(HttpHeaders.CONTENT_TYPE, "application/json");
         httpPost.setHeaders(auth, accept, contentType);
-        CloseableHttpResponse response = client.execute(httpPost);
+        ClassicHttpResponse response = (ClassicHttpResponse) client.execute(httpPost);
         return response;
     }
 
-    public CloseableHttpResponse sendPostRequestWithIncorrectParams() throws IOException {
+    public ClassicHttpResponse sendPostRequestWithIncorrectParams() throws IOException {
         HttpPost httpPost = new HttpPost(API_URL);
         List<NameValuePair> params = new ArrayList<NameValuePair>(2);
         params.add(new BasicNameValuePair("name", "John Doe"));
@@ -72,11 +73,11 @@ public class HttpService {
         Header accept = new BasicHeader(HttpHeaders.ACCEPT, "application/json");
         Header contentType = new BasicHeader(HttpHeaders.CONTENT_TYPE, "application/json");
         httpPost.setHeaders(auth, accept, contentType);
-        CloseableHttpResponse response = client.execute(httpPost);
+        ClassicHttpResponse response = (ClassicHttpResponse) client.execute(httpPost);
         return response;
     }
 
-    public CloseableHttpResponse sendPutRequest(User user) throws IOException {
+    public ClassicHttpResponse sendPutRequest(User user) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         String url = API_URL;
         if (user.getId() != 0) {
@@ -90,11 +91,11 @@ public class HttpService {
         Header accept = new BasicHeader(HttpHeaders.ACCEPT, "application/json");
         Header contentType = new BasicHeader(HttpHeaders.CONTENT_TYPE, "application/json");
         httpPut.setHeaders(auth, accept, contentType);
-        CloseableHttpResponse response = client.execute(httpPut);
+        ClassicHttpResponse response = (ClassicHttpResponse) client.execute(httpPut);
         return response;
     }
 
-    public CloseableHttpResponse sendPatchRequest(User user) throws IOException {
+    public ClassicHttpResponse sendPatchRequest(User user) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         String url = API_URL;
         if (user.getId() != 0) {
@@ -108,21 +109,21 @@ public class HttpService {
         Header accept = new BasicHeader(HttpHeaders.ACCEPT, "application/json");
         Header contentType = new BasicHeader(HttpHeaders.CONTENT_TYPE, "application/json");
         httpPatch.setHeaders(auth, accept, contentType);
-        CloseableHttpResponse response = client.execute(httpPatch);
+        ClassicHttpResponse response = (ClassicHttpResponse) client.execute(httpPatch);
         return response;
     }
 
-    public CloseableHttpResponse sendDeleteRequest(int id) throws IOException {
+    public ClassicHttpResponse sendDeleteRequest(int id) throws IOException {
         HttpUriRequest request = new HttpDelete("https://gorest.co.in/public/v2/users/" + id);
         Header header = new BasicHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
         request.setHeader(header);
-        CloseableHttpResponse response = client.execute(request);
+        ClassicHttpResponse response = (ClassicHttpResponse) client.execute(request);
         return response;
     }
 
-    public CloseableHttpResponse sendDeleteRequestWithoutToken(int id) throws IOException {
+    public ClassicHttpResponse sendDeleteRequestWithoutToken(int id) throws IOException {
         HttpUriRequest request = new HttpDelete("https://gorest.co.in/public/v2/users/" + id);
-        CloseableHttpResponse response = client.execute(request);
+        ClassicHttpResponse response = (ClassicHttpResponse) client.execute(request);
         return response;
     }
 

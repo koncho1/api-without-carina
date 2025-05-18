@@ -3,6 +3,7 @@ package org.example;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.example.models.User;
@@ -21,7 +22,7 @@ public class TestDataFactory {
     public int getId() throws IOException, ParseException {
         ObjectMapper mapper = new ObjectMapper();
         HttpService httpService = new HttpService();
-        CloseableHttpResponse response = httpService.sendGetRequest(0);
+        ClassicHttpResponse response = httpService.sendGetRequest(0);
         User[] users = mapper.readValue(EntityUtils.toString(response.getEntity()), User[].class);
         return users[0].getId();
     }
