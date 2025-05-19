@@ -1,130 +1,147 @@
 package org.example;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.hc.client5.http.classic.HttpClient;
-import org.apache.hc.client5.http.classic.methods.*;
-import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.core5.http.*;
-import org.apache.hc.core5.http.io.entity.StringEntity;
-import org.apache.hc.core5.http.message.BasicHeader;
-import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.apache.hc.core5.http.HttpHeaders;
 import org.example.models.User;
 
+import java.net.http.HttpResponse;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 import java.util.ArrayList;
 import java.util.List;
 
 public class HttpService {
 
-    private static final String API_URL = "https://gorest.co.in/public/v2/users";
+    private static final String PUT_METHOD = "put";
+
+    private static final String GET_METHOD = "get";
+
+    private static final String POST_METHOD = "post";
+
+    private static final String PATCH_METHOD = "patch";
+
+    private static final String DELETE_METHOD = "delete";
 
     private String token;
 
     private HttpClient client;
 
-    public HttpService() {
-        client = HttpClients.createDefault();
+    private String apiURL;
+
+    public HttpService(String apiURL) {
+        this.apiURL = apiURL;
+        client = HttpClient.newBuilder().build();
     }
 
-    public HttpService(String token) {
+    public HttpService(String token, String apiURL) {
         this.token = token;
-        client = HttpClients.createDefault();
+        this.apiURL = apiURL;
+        client = HttpClient.newBuilder().build();
     }
 
-    public ClassicHttpResponse sendGetRequest(int id) throws IOException {
-        String url = API_URL;
-        if (id != 0) {
-            url += "/" + id;
-        }
-        HttpUriRequest request = new HttpGet(url);
-        Header accept = new BasicHeader(HttpHeaders.ACCEPT, "application/json");
-        request.setHeader(accept);
-        ClassicHttpResponse response = (ClassicHttpResponse) client.execute(request);
+    public HttpResponse<String> sendGetRequest(int id) throws IOException, URISyntaxException, InterruptedException {
+        HttpRequest request = createRequest(id, GET_METHOD, "");
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         return response;
     }
 
-    public ClassicHttpResponse sendPostRequest(User user) throws IOException {
+    public HttpResponse<String> sendPostRequest(User user) throws IOException, URISyntaxException, InterruptedException {
         ObjectMapper mapper = new ObjectMapper();
-        HttpPost httpPost = new HttpPost(API_URL);
-        String json = mapper.writeValueAsString(user);
-        HttpEntity entity = new StringEntity(json);
-        httpPost.setEntity(entity);
-        Header auth = new BasicHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-        Header accept = new BasicHeader(HttpHeaders.ACCEPT, "application/json");
-        Header contentType = new BasicHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-        httpPost.setHeaders(auth, accept, contentType);
-        ClassicHttpResponse response = (ClassicHttpResponse) client.execute(httpPost);
+        HttpRequest request = createRequest(user.getId(), POST_METHOD, mapper.writeValueAsString(user));
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         return response;
     }
 
-    public ClassicHttpResponse sendPostRequestWithIncorrectParams() throws IOException {
-        HttpPost httpPost = new HttpPost(API_URL);
-        List<NameValuePair> params = new ArrayList<NameValuePair>(2);
-        params.add(new BasicNameValuePair("name", "John Doe"));
-        params.add(new BasicNameValuePair("mail", String.format("%s@gmail.com", RandomStringUtils.random(10, true, true))));
-        params.add(new BasicNameValuePair("gender", "male"));
-        params.add(new BasicNameValuePair("status", "active"));
-        httpPost.setEntity(new UrlEncodedFormEntity(params));
-        Header auth = new BasicHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-        Header accept = new BasicHeader(HttpHeaders.ACCEPT, "application/json");
-        Header contentType = new BasicHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-        httpPost.setHeaders(auth, accept, contentType);
-        ClassicHttpResponse response = (ClassicHttpResponse) client.execute(httpPost);
+    public HttpResponse<String> sendPostRequestWithIncorrectParams() throws IOException, URISyntaxException, InterruptedException {
+        String body = "{\"name\": \"John Doe\",\"mail\": \"ddsadfasadsadsada@mail.com\",\"gender\": \"male\",\"status\":\"active\"}";
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(apiURL))
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .headers("Authorization", "Bearer " + token, "Accept", "application/json", "Content-type", "application/json")
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         return response;
     }
 
-    public ClassicHttpResponse sendPutRequest(User user) throws IOException {
+    public HttpResponse<String> sendPutRequest(User user) throws IOException, URISyntaxException, InterruptedException {
         ObjectMapper mapper = new ObjectMapper();
-        String url = API_URL;
-        if (user.getId() != 0) {
-            url += "/" + user.getId();
-        }
-        HttpPut httpPut = new HttpPut(url);
-        String json = mapper.writeValueAsString(user);
-        HttpEntity entity = new StringEntity(json);
-        httpPut.setEntity(entity);
-        Header auth = new BasicHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-        Header accept = new BasicHeader(HttpHeaders.ACCEPT, "application/json");
-        Header contentType = new BasicHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-        httpPut.setHeaders(auth, accept, contentType);
-        ClassicHttpResponse response = (ClassicHttpResponse) client.execute(httpPut);
+        HttpRequest request = createRequest(user.getId(), PUT_METHOD, mapper.writeValueAsString(user));
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         return response;
     }
 
-    public ClassicHttpResponse sendPatchRequest(User user) throws IOException {
+    public HttpResponse<String> sendPatchRequest(User user) throws IOException, URISyntaxException, InterruptedException {
         ObjectMapper mapper = new ObjectMapper();
-        String url = API_URL;
-        if (user.getId() != 0) {
-            url += "/" + user.getId();
+        HttpRequest request = createRequest(user.getId(), PATCH_METHOD, mapper.writeValueAsString(user));
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        return response;
+    }
+
+    public HttpResponse<String> sendDeleteRequest(int id) throws IOException, URISyntaxException, InterruptedException {
+        HttpRequest request = createRequest(id, DELETE_METHOD, "");
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        return response;
+    }
+
+    public HttpResponse<String> sendDeleteRequestWithoutToken(int id) throws IOException, URISyntaxException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(apiURL + "/" + id))
+                .DELETE()
+                .headers("Authorization", "Bearer " + token, "Accept", "application/json", "Content-type", "application/json")
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        return response;
+    }
+
+    private HttpRequest createRequest(int userId, String methodType, String body) throws URISyntaxException {
+        HttpRequest request;
+        String url = apiURL;
+        if (userId != 0) {
+            url += "/" + userId;
         }
-        HttpPatch httpPatch = new HttpPatch(url);
-        String json = mapper.writeValueAsString(user);
-        HttpEntity entity = new StringEntity(json);
-        httpPatch.setEntity(entity);
-        Header auth = new BasicHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-        Header accept = new BasicHeader(HttpHeaders.ACCEPT, "application/json");
-        Header contentType = new BasicHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-        httpPatch.setHeaders(auth, accept, contentType);
-        ClassicHttpResponse response = (ClassicHttpResponse) client.execute(httpPatch);
-        return response;
-    }
-
-    public ClassicHttpResponse sendDeleteRequest(int id) throws IOException {
-        HttpUriRequest request = new HttpDelete("https://gorest.co.in/public/v2/users/" + id);
-        Header header = new BasicHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-        request.setHeader(header);
-        ClassicHttpResponse response = (ClassicHttpResponse) client.execute(request);
-        return response;
-    }
-
-    public ClassicHttpResponse sendDeleteRequestWithoutToken(int id) throws IOException {
-        HttpUriRequest request = new HttpDelete("https://gorest.co.in/public/v2/users/" + id);
-        ClassicHttpResponse response = (ClassicHttpResponse) client.execute(request);
-        return response;
+        switch (methodType) {
+            case GET_METHOD:
+                request = HttpRequest.newBuilder()
+                        .uri(new URI(url))
+                        .GET()
+                        .headers("Accept", "application/json", "Content-type", "application/json")
+                        .build();
+                break;
+            case PATCH_METHOD:
+                request = HttpRequest.newBuilder()
+                        .uri(new URI(url))
+                        .PUT(HttpRequest.BodyPublishers.ofString(body))
+                        .headers("Authorization", "Bearer " + token, "Accept", "application/json", "Content-type", "application/json")
+                        .build();
+                break;
+            case PUT_METHOD:
+                request = HttpRequest.newBuilder()
+                        .uri(new URI(url))
+                        .PUT(HttpRequest.BodyPublishers.ofString(body))
+                        .headers("Authorization", "Bearer " + token, "Accept", "application/json", "Content-type", "application/json")
+                        .build();
+                break;
+            case POST_METHOD:
+                request = HttpRequest.newBuilder()
+                        .uri(new URI(url))
+                        .POST(HttpRequest.BodyPublishers.ofString(body))
+                        .headers("Authorization", "Bearer " + token, "Accept", "application/json", "Content-type", "application/json")
+                        .build();
+                break;
+            case DELETE_METHOD:
+                request = HttpRequest.newBuilder()
+                        .uri(new URI(url))
+                        .DELETE()
+                        .headers("Authorization", "Bearer " + token, "Accept", "application/json", "Content-type", "application/json")
+                        .build();
+                break;
+            default:
+                throw new UnsupportedOperationException("This method is not supported");
+        }
+        return request;
     }
 
 

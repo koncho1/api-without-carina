@@ -3,119 +3,118 @@ package org.example;
 
 import com.networknt.schema.ValidationMessage;
 import org.apache.hc.core5.http.*;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.example.models.User;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.http.HttpResponse;
 import java.util.List;
 
 
 public class UserTest extends BaseTest {
 
-    private static final int NO_SPECIFIC_ID = 0;
+    private static final int GET_ALL_USERS_ID = 0;
 
-    private static final int NON_EXISTENT_ID = 1;
+    private static final int NON_EXISTENT_ID = -1;
 
-    private static final int HTTP_NOTFOUND = 404;
+    private static final String INCORRECT_FORMAT_EMAIL = "johnmail.com";
 
-    private static final int HTTP_UNPROCESSABLECONTENT = 422;
-
-    private static final int HTTP_NOCONTENTSUCCESS = 204;
-
-    private static final int HTTP_OK = 200;
-
-    private static final int HTTP_CREATED = 201;
-
-    private static final int HTTP_UNAUTHORIZED = 401;
 
     @Test
-    public void testGetUsers() throws IOException, ParseException {
-        ClassicHttpResponse response = httpService.sendGetRequest(NO_SPECIFIC_ID);
-        int responseCode = response.getCode();
-        String responseBody = EntityUtils.toString(response.getEntity());
-        Assert.assertEquals(responseCode, HTTP_OK, "Wrong response code. Expected: " + HTTP_OK + " Received: " + responseCode);
-        List<ValidationMessage> errors = jsonValidator.validatePayload(responseBody, "getUsersTemplate");
+    public void testGetUsers() throws IOException, URISyntaxException, InterruptedException {
+        HttpResponse<String> response = httpService.sendGetRequest(GET_ALL_USERS_ID);
+        int responseCode = response.statusCode();
+        String responseBody = response.body();
+        Assert.assertEquals(responseCode, HttpStatus.SC_SUCCESS, "Wrong response code. Expected: " + HttpStatus.SC_SUCCESS + " Received: " + responseCode);
+        List<ValidationMessage> errors = jsonValidator.validateSchema(responseBody, "getUsersTemplate");
         Assert.assertTrue(errors.isEmpty(), errors.toString());
     }
 
     @Test
-    public void testGetUser() throws IOException, ParseException {
-        ClassicHttpResponse response = httpService.sendGetRequest(testDataFactory.getId());
-        int responseCode = response.getCode();
-        String responseBody = EntityUtils.toString(response.getEntity());
-        Assert.assertEquals(responseCode, HTTP_OK, "Wrong response code. Expected: " + HTTP_OK + " Received: " + responseCode);
-        List<ValidationMessage> errors = jsonValidator.validatePayload(responseBody, "getUserTemplate");
+    public void testGetUser() throws IOException, URISyntaxException, InterruptedException {
+        HttpResponse<String> response = httpService.sendGetRequest(testDataFactory.getId());
+        int responseCode = response.statusCode();
+        String responseBody = response.body();
+        Assert.assertEquals(responseCode, HttpStatus.SC_SUCCESS, "Wrong response code. Expected: " + HttpStatus.SC_SUCCESS + " Received: " + responseCode);
+        List<ValidationMessage> errors = jsonValidator.validateSchema(responseBody, "getUserTemplate");
         Assert.assertTrue(errors.isEmpty(), errors.toString());
     }
 
     @Test
-    public void testGetNonExistentUser() throws IOException {
-        ClassicHttpResponse response = httpService.sendGetRequest(NON_EXISTENT_ID);
-        int responseCode = response.getCode();
-        Assert.assertEquals(responseCode, HTTP_NOTFOUND, "Wrong response code. Expected: " + HTTP_NOTFOUND + " Received: " + responseCode);
+    public void testGetNonExistentUser() throws IOException, URISyntaxException, InterruptedException {
+        HttpResponse<String> response = httpService.sendGetRequest(NON_EXISTENT_ID);
+        int responseCode = response.statusCode();
+        Assert.assertEquals(responseCode, HttpStatus.SC_NOT_FOUND, "Wrong response code. Expected: " + HttpStatus.SC_NOT_FOUND + " Received: " + responseCode);
     }
 
     @Test
-    void testCreateUser() throws IOException, ParseException {
-        ClassicHttpResponse response = httpService.sendPostRequest(testDataFactory.generateTestUser());
-        int responseCode = response.getCode();
-        String responseBody = EntityUtils.toString(response.getEntity());
-        Assert.assertEquals(responseCode, HTTP_CREATED, "Wrong response code. Expected: " + HTTP_CREATED + " Received: " + responseCode);
-        List<ValidationMessage> errors = jsonValidator.validatePayload(responseBody, "postUserTemplate");
-        Assert.assertTrue(errors.isEmpty(), errors.toString());
-    }
-
-    @Test
-    void testCreateUserWithIncorrectParams() throws IOException {
-        ClassicHttpResponse response = httpService.sendPostRequestWithIncorrectParams();
-        int responseCode = response.getCode();
-        Assert.assertEquals(responseCode, HTTP_UNPROCESSABLECONTENT, "Wrong response code. Expected: " + HTTP_UNPROCESSABLECONTENT + " Received: " + responseCode);
-    }
-
-    @Test
-    void testCreateUserWithIncorrectMailFormat() throws IOException, ParseException {
+    public void testCreateUser() throws IOException, URISyntaxException, InterruptedException {
         User user = testDataFactory.generateTestUser();
-        user.setEmail("johnmail.com");
-        ClassicHttpResponse response = httpService.sendPostRequest(user);
-        int responseCode = response.getCode();
-        Assert.assertEquals(responseCode, HTTP_UNPROCESSABLECONTENT, "Wrong response code. Expected: " + HTTP_UNPROCESSABLECONTENT + " Received: " + responseCode);
-    }
-
-    @Test
-    public void testPatchUser() throws IOException, ParseException {
-        ClassicHttpResponse response = httpService.sendPatchRequest(testDataFactory.generateTestUser());
-        int responseCode = response.getCode();
-        String responseBody = EntityUtils.toString(response.getEntity());
-        Assert.assertEquals(responseCode, HTTP_OK, "Wrong response code. Expected: " + HTTP_OK + " Received: " + responseCode);
-        List<ValidationMessage> errors = jsonValidator.validatePayload(responseBody, "patchUserTemplate");
+        HttpResponse<String> response = httpService.sendPostRequest(user);
+        int responseCode = response.statusCode();
+        String responseBody = response.body();
+        System.out.println(responseBody);
+        Assert.assertEquals(responseCode, HttpStatus.SC_CREATED, "Wrong response code. Expected: " + HttpStatus.SC_CREATED + " Received: " + responseCode);
+        List<ValidationMessage> errors = jsonValidator.validateSchema(responseBody, "postUserTemplate");
         Assert.assertTrue(errors.isEmpty(), errors.toString());
+        Assert.assertTrue(jsonValidator.validateUserWithoutId(responseBody, user), "The received user is not the same as the sent user");
     }
 
     @Test
-    public void testPutUser() throws IOException, ParseException {
-        ClassicHttpResponse response = httpService.sendPutRequest(testDataFactory.generateTestUser());
-        int responseCode = response.getCode();
-        String responseBody = EntityUtils.toString(response.getEntity());
-        Assert.assertEquals(responseCode, HTTP_OK, "Wrong response code. Expected: " + HTTP_OK + " Received: " + responseCode);
-        List<ValidationMessage> errors = jsonValidator.validatePayload(responseBody, "putUserTemplate");
+    public void testCreateUserWithIncorrectParams() throws IOException, URISyntaxException, InterruptedException {
+        HttpResponse<String> response = httpService.sendPostRequestWithIncorrectParams();
+        int responseCode = response.statusCode();
+        Assert.assertEquals(responseCode, HttpStatus.SC_UNPROCESSABLE_CONTENT, "Wrong response code. Expected: " + HttpStatus.SC_UNPROCESSABLE_CONTENT + " Received: " + responseCode);
+    }
+
+    @Test
+    public void testCreateUserWithIncorrectMailFormat() throws IOException, URISyntaxException, InterruptedException {
+        User user = testDataFactory.generateTestUser();
+        user.setEmail(INCORRECT_FORMAT_EMAIL);
+        HttpResponse<String> response = httpService.sendPostRequest(user);
+        int responseCode = response.statusCode();
+        Assert.assertEquals(responseCode, HttpStatus.SC_UNPROCESSABLE_CONTENT, "Wrong response code. Expected: " + HttpStatus.SC_UNPROCESSABLE_CONTENT + " Received: " + responseCode);
+    }
+
+    @Test
+    public void testPatchUser() throws IOException, URISyntaxException, InterruptedException {
+        User user = testDataFactory.generateTestUser();
+        HttpResponse<String> response = httpService.sendPatchRequest(user);
+        int responseCode = response.statusCode();
+        String responseBody = response.body();
+        Assert.assertEquals(responseCode, HttpStatus.SC_SUCCESS, "Wrong response code. Expected: " + HttpStatus.SC_SUCCESS + " Received: " + responseCode);
+        List<ValidationMessage> errors = jsonValidator.validateSchema(responseBody, "patchUserTemplate");
         Assert.assertTrue(errors.isEmpty(), errors.toString());
+        Assert.assertTrue(jsonValidator.validateUser(responseBody, user), "The received user is not the same as the sent user");
     }
 
     @Test
-    public void testDeleteUser() throws IOException, ParseException {
-        ClassicHttpResponse response = httpService.sendDeleteRequest(testDataFactory.getId());
-        int responseCode = response.getCode();
-        Assert.assertEquals(responseCode, HTTP_NOCONTENTSUCCESS, "Wrong response code. Expected: " + HTTP_NOCONTENTSUCCESS + " Received: " + responseCode);
+    public void testPutUser() throws IOException, URISyntaxException, InterruptedException {
+        User user = testDataFactory.generateTestUser();
+        HttpResponse<String> response = httpService.sendPutRequest(user);
+        int responseCode = response.statusCode();
+        String responseBody = response.body();
+        Assert.assertEquals(responseCode, HttpStatus.SC_SUCCESS, "Wrong response code. Expected: " + HttpStatus.SC_SUCCESS + " Received: " + responseCode);
+        List<ValidationMessage> errors = jsonValidator.validateSchema(responseBody, "putUserTemplate");
+        Assert.assertTrue(errors.isEmpty(), errors.toString());
+        Assert.assertTrue(jsonValidator.validateUser(responseBody, user), "The received user is not the same as the sent user");
     }
 
     @Test
-    public void testDeleteUserWithoutAccessToken() throws IOException, ParseException {
-        ClassicHttpResponse response = httpService.sendDeleteRequestWithoutToken(testDataFactory.getId());
-        int responseCode = response.getCode();
-        Assert.assertEquals(responseCode, HTTP_UNAUTHORIZED, "Wrong response code. Expected: " + HTTP_UNAUTHORIZED + " Received: " + responseCode);
+    public void testDeleteUser() throws IOException, URISyntaxException, InterruptedException {
+        HttpResponse<String> response = httpService.sendDeleteRequest(testDataFactory.getId());
+        int responseCode = response.statusCode();
+        Assert.assertEquals(responseCode, HttpStatus.SC_NO_CONTENT, "Wrong response code. Expected: " + HttpStatus.SC_NO_CONTENT + " Received: " + responseCode);
+    }
+
+    @Test
+    public void testDeleteUserWithoutAccessToken() throws IOException, URISyntaxException, InterruptedException {
+        HttpResponse<String> response = httpService.sendDeleteRequestWithoutToken(testDataFactory.getId());
+        int responseCode = response.statusCode();
+        Assert.assertEquals(responseCode, HttpStatus.SC_UNAUTHORIZED, "Wrong response code. Expected: " + HttpStatus.SC_UNAUTHORIZED + " Received: " + responseCode);
     }
 
 }

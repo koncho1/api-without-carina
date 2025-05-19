@@ -1,5 +1,6 @@
 package org.example;
 
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 
 import java.util.Properties;
@@ -18,15 +19,18 @@ public abstract class BaseTest {
 
     protected String token;
 
-    @BeforeSuite
+    private String apiURL;
+
+    @BeforeMethod
     public void setUp() {
         ConfigProvider configProvider = new ConfigProvider();
         loadProperties = configProvider.loadConfig();
         token = loadProperties.getProperty("token");
-        httpService = new HttpService(token);
+        apiURL = loadProperties.getProperty("api_url");
+        httpService = new HttpService(token, apiURL);
         jsonValidator = new JsonValidator(loadProperties);
-        testDataFactory = new TestDataFactory();
-        graphQLService = new GraphQLService(token);
+        testDataFactory = new TestDataFactory(apiURL);
+        graphQLService = new GraphQLService(token, apiURL);
     }
 
 
