@@ -21,16 +21,18 @@ public abstract class BaseTest {
 
     private String apiURL;
 
+    private String graphQLURL;
+
     @BeforeMethod
     public void setUp() {
-        ConfigProvider configProvider = new ConfigProvider();
-        loadProperties = configProvider.loadConfig();
+        loadProperties = new ConfigProvider().loadConfig();
         token = loadProperties.getProperty("token");
         apiURL = loadProperties.getProperty("api_url");
+        graphQLURL = loadProperties.getProperty("graphql_url");
         httpService = new HttpService(token, apiURL);
         jsonValidator = new JsonValidator(loadProperties);
         testDataFactory = new TestDataFactory(apiURL);
-        graphQLService = new GraphQLService(token, apiURL);
+        graphQLService = new GraphQLService(token, graphQLURL);
     }
 
 

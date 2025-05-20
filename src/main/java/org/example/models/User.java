@@ -7,6 +7,13 @@ import lombok.*;
 @Data
 public class User {
 
+    public User(String name, String email, String gender, String status) {
+        this.name = name;
+        this.email = email;
+        this.gender = gender;
+        this.status = status;
+    }
+
     private int id;
 
     private String name;

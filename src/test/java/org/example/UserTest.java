@@ -56,16 +56,15 @@ public class UserTest extends BaseTest {
         HttpResponse<String> response = httpService.sendPostRequest(user);
         int responseCode = response.statusCode();
         String responseBody = response.body();
-        System.out.println(responseBody);
         Assert.assertEquals(responseCode, HttpStatus.SC_CREATED, "Wrong response code. Expected: " + HttpStatus.SC_CREATED + " Received: " + responseCode);
         List<ValidationMessage> errors = jsonValidator.validateSchema(responseBody, "postUserTemplate");
         Assert.assertTrue(errors.isEmpty(), errors.toString());
-        Assert.assertTrue(jsonValidator.validateUserWithoutId(responseBody, user), "The received user is not the same as the sent user");
+        Assert.assertTrue(jsonValidator.validateUser(responseBody, user), "The received user is not the same as the sent user");
     }
 
     @Test
     public void testCreateUserWithIncorrectParams() throws IOException, URISyntaxException, InterruptedException {
-        HttpResponse<String> response = httpService.sendPostRequestWithIncorrectParams();
+        HttpResponse<String> response = httpService.sendPostRequestWithInvalidEmail();
         int responseCode = response.statusCode();
         Assert.assertEquals(responseCode, HttpStatus.SC_UNPROCESSABLE_CONTENT, "Wrong response code. Expected: " + HttpStatus.SC_UNPROCESSABLE_CONTENT + " Received: " + responseCode);
     }
@@ -82,6 +81,7 @@ public class UserTest extends BaseTest {
     @Test
     public void testPatchUser() throws IOException, URISyntaxException, InterruptedException {
         User user = testDataFactory.generateTestUser();
+        user.setId(testDataFactory.getId());
         HttpResponse<String> response = httpService.sendPatchRequest(user);
         int responseCode = response.statusCode();
         String responseBody = response.body();
@@ -94,6 +94,7 @@ public class UserTest extends BaseTest {
     @Test
     public void testPutUser() throws IOException, URISyntaxException, InterruptedException {
         User user = testDataFactory.generateTestUser();
+        user.setId(testDataFactory.getId());
         HttpResponse<String> response = httpService.sendPutRequest(user);
         int responseCode = response.statusCode();
         String responseBody = response.body();

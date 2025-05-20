@@ -1,7 +1,7 @@
 package org.example;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.hc.core5.http.HttpHeaders;
+import org.example.enums.HttpMethodType;
 import org.example.models.User;
 
 import java.net.http.HttpResponse;
@@ -10,20 +10,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.util.ArrayList;
-import java.util.List;
+
+import static org.example.enums.HttpMethodType.*;
 
 public class HttpService {
-
-    private static final String PUT_METHOD = "put";
-
-    private static final String GET_METHOD = "get";
-
-    private static final String POST_METHOD = "post";
-
-    private static final String PATCH_METHOD = "patch";
-
-    private static final String DELETE_METHOD = "delete";
 
     private String token;
 
@@ -43,19 +33,19 @@ public class HttpService {
     }
 
     public HttpResponse<String> sendGetRequest(int id) throws IOException, URISyntaxException, InterruptedException {
-        HttpRequest request = createRequest(id, GET_METHOD, "");
+        HttpRequest request = createRequest(id, GET, "");
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         return response;
     }
 
     public HttpResponse<String> sendPostRequest(User user) throws IOException, URISyntaxException, InterruptedException {
         ObjectMapper mapper = new ObjectMapper();
-        HttpRequest request = createRequest(user.getId(), POST_METHOD, mapper.writeValueAsString(user));
+        HttpRequest request = createRequest(user.getId(), POST, mapper.writeValueAsString(user));
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         return response;
     }
 
-    public HttpResponse<String> sendPostRequestWithIncorrectParams() throws IOException, URISyntaxException, InterruptedException {
+    public HttpResponse<String> sendPostRequestWithInvalidEmail() throws IOException, URISyntaxException, InterruptedException {
         String body = "{\"name\": \"John Doe\",\"mail\": \"ddsadfasadsadsada@mail.com\",\"gender\": \"male\",\"status\":\"active\"}";
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(apiURL))
@@ -68,20 +58,20 @@ public class HttpService {
 
     public HttpResponse<String> sendPutRequest(User user) throws IOException, URISyntaxException, InterruptedException {
         ObjectMapper mapper = new ObjectMapper();
-        HttpRequest request = createRequest(user.getId(), PUT_METHOD, mapper.writeValueAsString(user));
+        HttpRequest request = createRequest(user.getId(), PUT, mapper.writeValueAsString(user));
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         return response;
     }
 
     public HttpResponse<String> sendPatchRequest(User user) throws IOException, URISyntaxException, InterruptedException {
         ObjectMapper mapper = new ObjectMapper();
-        HttpRequest request = createRequest(user.getId(), PATCH_METHOD, mapper.writeValueAsString(user));
+        HttpRequest request = createRequest(user.getId(), PATCH, mapper.writeValueAsString(user));
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         return response;
     }
 
     public HttpResponse<String> sendDeleteRequest(int id) throws IOException, URISyntaxException, InterruptedException {
-        HttpRequest request = createRequest(id, DELETE_METHOD, "");
+        HttpRequest request = createRequest(id, DELETE, "");
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         return response;
     }
@@ -96,52 +86,38 @@ public class HttpService {
         return response;
     }
 
-    private HttpRequest createRequest(int userId, String methodType, String body) throws URISyntaxException {
-        HttpRequest request;
+    private HttpRequest createRequest(int userId, HttpMethodType methodType, String body) throws URISyntaxException {
         String url = apiURL;
         if (userId != 0) {
             url += "/" + userId;
         }
+        HttpRequest.Builder request = HttpRequest.newBuilder()
+                .uri(new URI(url));
         switch (methodType) {
-            case GET_METHOD:
-                request = HttpRequest.newBuilder()
-                        .uri(new URI(url))
-                        .GET()
-                        .headers("Accept", "application/json", "Content-type", "application/json")
-                        .build();
+            case GET:
+                request.GET()
+                        .headers("Accept", "application/json", "Content-type", "application/json");
                 break;
-            case PATCH_METHOD:
-                request = HttpRequest.newBuilder()
-                        .uri(new URI(url))
-                        .PUT(HttpRequest.BodyPublishers.ofString(body))
-                        .headers("Authorization", "Bearer " + token, "Accept", "application/json", "Content-type", "application/json")
-                        .build();
+            case PATCH:
+                request.PUT(HttpRequest.BodyPublishers.ofString(body))
+                        .headers("Authorization", "Bearer " + token, "Accept", "application/json", "Content-type", "application/json");
                 break;
-            case PUT_METHOD:
-                request = HttpRequest.newBuilder()
-                        .uri(new URI(url))
-                        .PUT(HttpRequest.BodyPublishers.ofString(body))
-                        .headers("Authorization", "Bearer " + token, "Accept", "application/json", "Content-type", "application/json")
-                        .build();
+            case PUT:
+                request.PUT(HttpRequest.BodyPublishers.ofString(body))
+                        .headers("Authorization", "Bearer " + token, "Accept", "application/json", "Content-type", "application/json");
                 break;
-            case POST_METHOD:
-                request = HttpRequest.newBuilder()
-                        .uri(new URI(url))
-                        .POST(HttpRequest.BodyPublishers.ofString(body))
-                        .headers("Authorization", "Bearer " + token, "Accept", "application/json", "Content-type", "application/json")
-                        .build();
+            case POST:
+                request.POST(HttpRequest.BodyPublishers.ofString(body))
+                        .headers("Authorization", "Bearer " + token, "Accept", "application/json", "Content-type", "application/json");
                 break;
-            case DELETE_METHOD:
-                request = HttpRequest.newBuilder()
-                        .uri(new URI(url))
-                        .DELETE()
-                        .headers("Authorization", "Bearer " + token, "Accept", "application/json", "Content-type", "application/json")
-                        .build();
+            case DELETE:
+                request.DELETE()
+                        .headers("Authorization", "Bearer " + token, "Accept", "application/json", "Content-type", "application/json");
                 break;
             default:
                 throw new UnsupportedOperationException("This method is not supported");
         }
-        return request;
+        return request.build();
     }
 
 

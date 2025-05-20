@@ -37,7 +37,7 @@ public class TestDataFactory {
         int randomGenderListIndex = random.nextInt(GENDER_LIST.size());
         String email = "TestUser" + System.currentTimeMillis() + "@gmail.com";
         String name = "TestUser" + System.currentTimeMillis();
-        User user = new User(getId(), name, email, GENDER_LIST.get(randomGenderListIndex), STATUS_LIST.get(randomStatusListIndex));
+        User user = new User(name, email, GENDER_LIST.get(randomGenderListIndex), STATUS_LIST.get(randomStatusListIndex));
         return user;
     }
 }

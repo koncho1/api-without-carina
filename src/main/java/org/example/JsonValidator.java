@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 
 public class JsonValidator {
 
+    private static final int NO_ID = 0;
+
     Properties properties;
 
     public JsonValidator(Properties properties) {
@@ -33,13 +35,10 @@ public class JsonValidator {
     public boolean validateUser(String responseBody, User sentUser) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         User receivedUser = mapper.readValue(responseBody, User.class);
+        if (sentUser.getId() == NO_ID) {
+            sentUser.setId(receivedUser.getId());
+        }
         return sentUser.equals(receivedUser);
     }
 
-    public boolean validateUserWithoutId(String responseBody, User sentUser) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        User receivedUser = mapper.readValue(responseBody, User.class);
-        sentUser.setId(receivedUser.getId());
-        return sentUser.equals(receivedUser);
-    }
 }

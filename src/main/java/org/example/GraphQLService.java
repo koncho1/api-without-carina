@@ -1,9 +1,6 @@
 package org.example;
 
-import org.apache.hc.client5.http.classic.methods.HttpPost;
-import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
-import org.apache.hc.core5.http.message.BasicHeader;
-import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.example.enums.GraphQLTemplateName;
 import org.example.models.User;
 
 import java.net.http.HttpClient;
@@ -13,14 +10,16 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import static org.example.enums.GraphQLTemplateName.*;
 
 public class GraphQLService {
 
-    private String token;
+    private static final String TEMPLATE_FOLDER_PATH = "src/main/java/org/example/resources/";
 
-    private static final String API_URL = "https://gorest.co.in/public/v2/graphql";
+    private String token;
 
     private String apiURL;
 
@@ -32,92 +31,36 @@ public class GraphQLService {
         httpClient = HttpClient.newBuilder().build();
     }
 
-    public HttpResponse<String> graphqlGetUserById(int id) throws IOException, URISyntaxException, InterruptedException {
-        String query = String.format("query User {\n" +
-                "    user(id: %s) {\n" +
-                "        email\n" +
-                "        gender\n" +
-                "        id\n" +
-                "        name\n" +
-                "        status\n" +
-                "    }\n" +
-                "}", id);
+    public HttpResponse<String> getUserById(int id) throws IOException, URISyntaxException, InterruptedException {
+        String query = String.format(Files.readString(Paths.get(TEMPLATE_FOLDER_PATH + GET_USER_BY_ID.getTemplateName())), id);
         HttpRequest request = createRequest(query);
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return response;
     }
 
-    public HttpResponse<String> graphqlGetUserCount() throws IOException, URISyntaxException, InterruptedException {
-        String query = "query Users {\n" +
-                "    users {\n" +
-                "        totalCount\n" +
-                "    }\n" +
-                "}";
+    public HttpResponse<String> getUserCount() throws IOException, URISyntaxException, InterruptedException {
+        String query = Files.readString(Paths.get(TEMPLATE_FOLDER_PATH + GET_USER_COUNT.getTemplateName()));
         HttpRequest request = createRequest(query);
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return response;
     }
 
-    public HttpResponse<String> graphqlDeleteUser(int id) throws IOException, URISyntaxException, InterruptedException {
-        String query = String.format("mutation DeleteUser {\n" +
-                "    deleteUser(input: { id: %s }) {\n" +
-                "        user {\n" +
-                "            email\n" +
-                "            gender\n" +
-                "            id\n" +
-                "            name\n" +
-                "        }\n" +
-                "    }\n" +
-                "}", id);
+    public HttpResponse<String> deleteUser(int id) throws IOException, URISyntaxException, InterruptedException {
+        String query = String.format(Files.readString(Paths.get(TEMPLATE_FOLDER_PATH + DELETE_USER.getTemplateName())), id);
         HttpRequest request = createRequest(query);
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return response;
     }
 
-    public HttpResponse<String> graphqlCreateUser(User user) throws IOException, URISyntaxException, InterruptedException {
-        String query = String.format("mutation CreateUser {\n" +
-                "    createUser(\n" +
-                "        input: {\n" +
-                "            name: \"%s\"\n" +
-                "            email: \"%s\"\n" +
-                "            gender: \"%s\"\n" +
-                "            status: \"%s\"\n" +
-                "        }\n" +
-                "    ) {\n" +
-                "        user {\n" +
-                "            email\n" +
-                "            gender\n" +
-                "            id\n" +
-                "            name\n" +
-                "            status\n" +
-                "        }\n" +
-                "    }\n" +
-                "}", user.getName(), user.getEmail(), user.getGender(), user.getStatus());
+    public HttpResponse<String> createUser(User user) throws IOException, URISyntaxException, InterruptedException {
+        String query = String.format(Files.readString(Paths.get(TEMPLATE_FOLDER_PATH + CREATE_USER.getTemplateName())), user.getName(), user.getEmail(), user.getGender(), user.getStatus());
         HttpRequest request = createRequest(query);
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return response;
     }
 
-    public HttpResponse<String> graphqlUpdateUser(User user) throws IOException, URISyntaxException, InterruptedException {
-        String query = String.format("mutation UpdateUser {\n" +
-                "    updateUser(\n" +
-                "        input: {\n" +
-                "            id: %s\n" +
-                "            email: \"%s\"\n" +
-                "            name: \"%s\"\n" +
-                "            gender: \"%s\"\n" +
-                "            status: \"%s\"\n" +
-                "        }\n" +
-                "    ) {\n" +
-                "        user {\n" +
-                "            email\n" +
-                "            gender\n" +
-                "            id\n" +
-                "            name\n" +
-                "            status\n" +
-                "        }\n" +
-                "    }\n" +
-                "}\n", user.getId(), user.getEmail(), user.getName(), user.getGender(), user.getStatus());
+    public HttpResponse<String> updateUser(User user) throws IOException, URISyntaxException, InterruptedException {
+        String query = String.format(Files.readString(Paths.get(TEMPLATE_FOLDER_PATH + UPDATE_USER.getTemplateName())), user.getId(), user.getEmail(), user.getName(), user.getGender(), user.getStatus());
         HttpRequest request = createRequest(query);
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return response;
@@ -125,7 +68,7 @@ public class GraphQLService {
 
     private HttpRequest createRequest(String body) throws URISyntaxException {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI(API_URL))
+                .uri(new URI(apiURL))
                 .POST(HttpRequest.BodyPublishers.ofString(body))
                 .headers("Authorization", "Bearer " + token, "Accept", "application/json", "Content-type", "application/json")
                 .build();
