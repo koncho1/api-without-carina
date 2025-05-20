@@ -1,0 +1,18 @@
+mutation CreateUser {
+    createUser(
+        input: {
+            name: %s
+            email: %s
+            gender: %s
+            status: %s
+        }
+    ) {
+        user {
+            email
+            gender
+            id
+            name
+            status
+        }
+    }
+}
